@@ -70,6 +70,30 @@
           <button
             type="button"
             class="buttonLink"
+            :class="{ 'is--active': showShareProjectMenu }"
+            @click="shareProject()"
+            :disabled="read_only"
+          >
+            {{ $t("share") }}
+          </button>
+
+          <div v-if="showShareProjectMenu" class="margin-bottom-small">
+            <label v-html="'Clé de partage'" />
+            <form class="input-group">
+              <input
+                ref="valueInput"
+                type="text"
+                autofocus
+                readonly
+                :value='$root.state.project_hyper_key[project.slugFolderName]'
+              />{{ project.shareKey }}
+              <button type="button" v-html="$t('copier')" class="bg-bleuvert" @click="copyToClipboard()" />
+            </form>
+          </div>
+
+          <button
+            type="button"
+            class="buttonLink"
             :disabled="zip_export_started"
             @click="downloadProjectArchive"
           >
@@ -126,6 +150,7 @@ export default {
   data() {
     return {
       showDuplicateProjectMenu: false,
+      showShareProjectMenu: false,
       show_edit_project: false,
       copy_project_name: this.$t("copy_of") + " " + this.project.name,
       zip_export_started: false,
@@ -190,6 +215,15 @@ export default {
         });
       }
     },
+    /* hyperplateau */
+    shareProject(d) {
+      this.$socketio.shareFolder({slugFolderName: this.project.slugFolderName});
+      this.showShareProjectMenu = !this.showShareProjectMenu
+    },
+    copyToClipboard(d) {
+      navigator.clipboard.writeText(this.$root.state.project_hyper_key[this.project.slugFolderName]);
+    },
+    /* hyperplateau */
     duplicateWithNewName(event) {
       console.log("METHODS • Project: duplicateWithNewName");
 

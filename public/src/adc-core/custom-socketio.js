@@ -52,7 +52,9 @@ module.exports = (function () {
             );
 
             this.socket.on("newNetworkInfos", this._onNewNetworkInfos);
-
+            // hyperplateau
+            this.socket.on("shareKey", this._onShareKey);
+            // hyperplateau
             this.socket.on("notify", this._onNotify);
 
             this.socket.on("pong", this._onPong);
@@ -358,6 +360,12 @@ module.exports = (function () {
             console.log("Received _onNewNetworkInfos packet.");
             window.state.localNetworkInfos = data;
           },
+          // hyperplateau
+          _onShareKey(shareKey) {
+            console.log("Received share key ",shareKey.key," for project ",shareKey.project);
+            window.state.project_hyper_key[shareKey.project] = shareKey.key;
+          },
+          // hyperplateau
           _onNotify({ localized_string, not_localized_string, type = "log" }) {
             console.log("Received _onNotify packet.");
             let msg = "";
@@ -431,6 +439,11 @@ module.exports = (function () {
           copyFolder(pdata) {
             this.socket.emit("copyFolder", pdata);
           },
+          // hyperplateau
+          shareFolder(pdata) {
+            this.socket.emit("shareFolder", pdata);
+          },
+          // hyperplateau
           updateNetworkInfos() {
             this.socket.emit("updateNetworkInfos");
           },

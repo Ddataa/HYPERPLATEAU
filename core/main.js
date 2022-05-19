@@ -8,8 +8,20 @@ const server = require("./server");
 const dev = require("./dev-log"),
   api = require("./api"),
   cache = require("./cache"),
-  auth = require("./auth");
+  auth = require("./auth"),
+  //hyperplateau
+  hyperdrive = require("./hyperdrive");
+ //hyperplateau
 
+ //hyperplateau
+if (
+  global.settings.hasOwnProperty("hyperplateau") &&
+  global.settings.hyperplateau === true
+) {    
+  hyperdrive.enable();
+  hyperdrive.setup();
+}  
+//hyperplateau
 module.exports = function ({ router }) {
   const is_electron = process.versions.hasOwnProperty("electron");
 

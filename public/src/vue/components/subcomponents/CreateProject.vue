@@ -139,6 +139,23 @@
         />
       </div>
     </div>
+
+    <!-- Hyperplateau -->
+    <div class="margin-bottom-small">
+      <label>
+        <button
+          type="button"
+          class="button-nostyle text-uc button-triangle"
+          :class="{ 'is--active': show_sharekey }"
+          @click="show_sharekey = !show_sharekey"
+        >
+          {{ $t("shareKey") }}
+        </button>
+      </label>
+      <div v-if="show_sharekey">
+        <input type="text" class="text-uc" v-model.trim="projectdata.shareKey" />
+      </div>
+    </div>
     <button type="submit" :disabled="read_only" class="_submitbutton">
       <span class="text-cap font-verysmall">
         <slot name="submit_button">{{ $t("create") }}</slot>
@@ -169,6 +186,7 @@ export default {
       show_folder: !!this.$root.settings.opened_folder,
       show_image: false,
       show_keywords: false,
+      show_sharekey: false,
       show_authors: this.$root.current_author,
       show_access_control: true,
 
@@ -254,6 +272,10 @@ export default {
       } else if (!!this.new_group_name) {
         this.projectdata.folder = this.new_group_name.toUpperCase();
       }
+      // hyperplateau
+      console.log(this.projectdata.shareKey)
+      window.state.project_hyper_key[this.projectdata.name] = this.projectdata.shareKey
+      //this.projectdata.shareKey = window.store.projects[slugProjectName].name
 
       if (
         this.projectdata.editing_limited_to === "only_authors" &&
@@ -275,6 +297,10 @@ export default {
           data: this.projectdata,
         })
         .then((fdata) => {
+          if (typeof this.projectdata.shareKey == "undefined") {
+            console.log("pas de clef")
+            //this.$socketio.shareFolder({slugFolderName: this.projectdata.name});
+          }
           this.$emit("close", "");
           this.$root.openProject(fdata.slugFolderName);
         });

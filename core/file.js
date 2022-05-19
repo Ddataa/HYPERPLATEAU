@@ -10,7 +10,10 @@ const dev = require("./dev-log"),
   thumbs = require("./thumbs"),
   cache = require("./cache"),
   recipe = require("./recipe"),
-  auth = require("./auth");
+  auth = require("./auth"),
+  //hyperplateau
+  hyperdrive = require("./hyperdrive");
+  //hyperplateau
 
 module.exports = (function () {
   const API = {
@@ -46,14 +49,18 @@ module.exports = (function () {
         return { [slugFolderName]: cached };
       }
 
+      // hyperplateau
+      // Folder 'Network' is needed by hyperdrive so we escape him, nevermind
+      if (slugFolderName == "Network") {
+        return
+      }
+      // hyperplateau
+
       const folder_path = api.getFullPath({ type, slugFolderName });
       const metaFolderPath = path.join(folder_path, "meta.txt");
 
       /*** ****/
-      let folder_meta = await _readMetaFile(metaFolderPath).catch(() => {
-        dev.error(`Missing ${metaFolderPath}`);
-        return false;
-      });
+      let folder_meta = await _readMetaFile(metaFolderPath);
       folder_meta = _sanitizeMetaFromFile({ type, meta: folder_meta });
       folder_meta.slugFolderName = slugFolderName;
 
@@ -123,7 +130,24 @@ module.exports = (function () {
       const folder_path = api.getFullPath({ type, slugFolderName });
       dev.logverbose(`Making a new folder at path ${folder_path}`);
 
-      await fs.ensureDir(folder_path);
+      // hyperplateau
+      if (
+        global.settings.hasOwnProperty("hyperplateau") &&
+        global.settings.hyperplateau === true &&
+        type != "authors"
+      ) {        
+        if (data.hasOwnProperty("shareKey")) {
+          await hyperdrive.mount(folder_path,data.shareKey);
+        } else {
+          let projectKey = await hyperdrive.create(slugFolderName);
+          data.shareKey = projectKey;
+        }
+      } else
+      {
+        await fs.ensureDir(folder_path);
+      }
+      //await fs.ensureDir(folder_path);
+      // hyperplateau
 
       if (
         data.hasOwnProperty("preview_rawdata") &&
@@ -136,9 +160,7 @@ module.exports = (function () {
         method: "create",
         existing: data,
       });
-
       const meta_path = path.join(folder_path, "meta.txt");
-
       const meta = await api
         .storeData(meta_path, data, "create")
         .catch((err) => {
@@ -172,7 +194,7 @@ module.exports = (function () {
         newFoldersData.hasOwnProperty("preview_rawdata") &&
         global.settings.structure[type].hasOwnProperty("preview")
       )
-        await _storeFoldersPreview(
+        _storeFoldersPreview(
           slugFolderName,
           type,
           newFoldersData.preview_rawdata
@@ -224,15 +246,20 @@ module.exports = (function () {
         throw `Missing type ${type} in global.settings.json`;
 
       try {
-        if (global.settings.removePermanently === true)
-          await _removeFolder({ type, slugFolderName });
-        else await _moveFolderToBin({ type, slugFolderName });
+        // hyperplateau
+        if ( global.settings.hyperplateau === true) {
+          await hyperdrive.delete(slugFolderName)
+        } else {
 
-        await thumbs.removeFolderThumbs(slugFolderName, type);
-        cache.del({ type, slugFolderName });
+          if (global.settings.removePermanently === true)
+            await _removeFolder({ type, slugFolderName });
+          else await _moveFolderToBin({ type, slugFolderName });
 
-        // await hyperplateau ? par exemple :
-        // await hyperdrive.remove({ slugFolderName });
+          await thumbs.removeFolderThumbs(slugFolderName, type);
+          cache.del({ type, slugFolderName });
+
+        }
+        // hyperplateau
 
         return;
       } catch (err) {
@@ -384,7 +411,7 @@ module.exports = (function () {
 
       let folders_and_medias = {};
       for (const { slugFolderName, metaFileName } of medias_list) {
-        if (!slugFolderName || !metaFileName) continue;
+        if (!slugFolderName || !metaFileName) return;
 
         if (!folders_and_medias.hasOwnProperty(slugFolderName))
           folders_and_medias[slugFolderName] = {
@@ -1126,23 +1153,6 @@ module.exports = (function () {
                 });
             })
           );
-        } else if (additionalMeta.type === "other") {
-          tasks.push(
-            new Promise((resolve, reject) => {
-              if (additionalMeta.extension)
-                mediaName += "." + additionalMeta.extension;
-              let pathToMedia = path.join(folder_path, mediaName);
-
-              var fileBuffer = new Buffer(rawData, "base64");
-              fs.writeFile(pathToMedia, fileBuffer)
-                .then(() => {
-                  resolve();
-                })
-                .catch((err) => {
-                  reject(err);
-                });
-            })
-          );
         }
 
         Promise.all(tasks)
@@ -1609,7 +1619,7 @@ module.exports = (function () {
           );
         })
         .then(() => {
-          if (preview_rawdata === "" || !preview_rawdata) {
+          if (preview_rawdata === "") {
             dev.logverbose(
               `COMMON — _storeFoldersPreview : No new preview data found, returning.`
             );

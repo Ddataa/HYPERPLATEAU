@@ -4,6 +4,9 @@ const dev = require("./dev-log"),
   exporter = require("./exporter"),
   file = require("./file"),
   changelog = require("./changelog"),
+  // hyperplateau
+  hyperdrive = require("./hyperdrive"),
+  //hyperplateau
   access = require("./access");
 
 const bcrypt = require("bcryptjs");
@@ -116,6 +119,9 @@ module.exports = (function () {
         onAddTempMediaToFolder(socket, d)
       );
       socket.on("copyFolder", (d) => onCopyFolder(socket, d));
+      // hyperplateau
+      socket.on("shareFolder", (d) => onShareFolder(socket, d));
+      //hyperplateau
 
       socket.on("updateNetworkInfos", (d) => onUpdateNetworkInfos(socket, d));
       socket.on("updateClientInfo", (d) => onUpdateClientInfo(socket, d));
@@ -209,7 +215,6 @@ module.exports = (function () {
       type,
       meta: data,
     });
-
     const slugFolderName = await file
       .createFolder({ type, data })
       .catch((err) => {
@@ -223,13 +228,11 @@ module.exports = (function () {
         });
         throw err;
       });
-
     changelog.append({
       author: auth.getSocketAuthors(socket),
       action: "created_folder",
       detail: { type, slugFolderName, data },
     });
-
     await sendFolders({ type, slugFolderName, id });
   }
   async function onEditFolder(
@@ -984,6 +987,27 @@ module.exports = (function () {
 
     await sendFolders({ type, slugFolderName: new_slugFolderName, id });
   }
+
+  // hyperplateau
+  async function onShareFolder(
+    socket,
+    { slugFolderName , id }
+  ) {
+    dev.logfunction(
+      `EVENT - onShareFolder with 
+      slugFolderName = ${slugFolderName}`
+    );
+    let projectKey = await hyperdrive.getShareKey(slugFolderName);
+    let shareKey = { project : slugFolderName, key : projectKey };
+
+    api.sendEventWithContent(
+      "shareKey",
+      shareKey,
+      io,
+      socket
+    );
+  }
+  //hyperplateau
 
   function onUpdateNetworkInfos(socket) {
     dev.logfunction(`EVENT - onUpdateNetworkInfos`);

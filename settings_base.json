@@ -1,11 +1,13 @@
 {
-  "protocol": "https",
+  "protocol": "http",
   "host": "localhost",
   "desired_port": 8080,
   "redirect_port": "",
   "userDirname": "plateau",
   "cache_content": true,
   "removePermanently": false,
+
+  "hyperplateau": true,
 
   "contentDirname": "user",
   "cacheDirname": "plateau_cache",
@@ -62,6 +64,9 @@
         },
         "keywords": {
           "type": "array"
+        },
+	      "shareKey": {
+          "type": "string"
         },
         "planning_slugs_in_order": {
           "type": "array"

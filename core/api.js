@@ -5,17 +5,24 @@ const path = require("path"),
   slugg = require("slugg"),
   os = require("os"),
   writeFileAtomic = require("write-file-atomic"),
-  ffmpegPath = require("ffmpeg-static"),
-  { path: ffprobePath } = require("ffprobe-static"),
+  //{ ffmpegPath, ffprobePath } = require("ffmpeg-ffprobe-static"),
   ffmpeg = require("fluent-ffmpeg"),
   pad = require("pad-left");
 
 const sharp = require("sharp");
 
 const dev = require("./dev-log");
-
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath);
+//hyperplateau
+const hyperdrive = require("./hyperdrive");
+//hyperplateau
+//ffmpeg.setFfmpegPath(ffmpegPath);
+//ffmpeg.setFfprobePath(ffprobePath);
+ffmpeg.setFfmpegPath(
+  path.join(global.appRoot, "ffmpeg-5.0.1-arm64-static", "ffmpeg")
+);
+ffmpeg.setFfprobePath(
+  path.join(global.appRoot, "ffmpeg-5.0.1-arm64-static", "ffprobe")
+);
 
 module.exports = (function () {
   const API = {
@@ -28,6 +35,15 @@ module.exports = (function () {
         global.pathToUserContent,
         global.settings.structure[type].path
       );
+      //hyperplateau
+      if (global.settings.hyperplateau) {
+        const base_path = path.join(
+          global.HyperPlateauPath,
+          global.settings.structure[type].path
+        );
+        return path.join(base_path, slugFolderName, file_name);
+      }
+      //hyperplateau
       return path.join(base_path, slugFolderName, file_name);
     },
     findFirstFilenameNotTaken: (thisPath, fileName) =>
@@ -56,6 +72,11 @@ module.exports = (function () {
   };
 
   function getFolderPath(slugFolderName = "") {
+    //hyperplateau
+    if (global.settings.hyperplateau) {
+      return path.join(global.HyperPlateauPath, slugFolderName);
+    } 
+    //hyperplateau
     return path.join(global.pathToUserContent, slugFolderName);
   }
 
@@ -140,12 +161,23 @@ module.exports = (function () {
       if (typeof d === "object") {
         d = parsedown.textify(d);
       }
-      writeFileAtomic(mpath, d, (err) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(parseData(d));
-      });
+      //hyperplateau
+      if (global.settings.hyperplateau) {
+        fs.writeFile(mpath, d, function (err) {
+          if (err) reject(err);
+          resolve();
+        });
+
+      } else {
+        writeFileAtomic(mpath, d, (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(parseData(d));
+        });
+      }
+      //hyperplateau
+      
     });
   }
 
