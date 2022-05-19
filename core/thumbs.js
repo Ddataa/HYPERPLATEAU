@@ -1,6 +1,5 @@
 const path = require("path"),
   fs = require("fs-extra"),
-  ffmpegPath = require("ffmpeg-static"),
   //{ path: ffprobePath } = require("ffprobe-static"),
   ffmpeg = require("fluent-ffmpeg"),
   exifReader = require("exif-reader"),
@@ -8,8 +7,6 @@ const path = require("path"),
   cheerio = require("cheerio"),
   fetch = require("node-fetch"),
   https = require("https");
-
-const PdfExtractor = require("pdf-extractor").PdfExtractor;
 
 sharp.cache(false);
 

@@ -2,11 +2,17 @@ const fs = require("fs-extra"),
   path = require("path"),
   sharp = require("sharp"),
   ffmpegPath = require("ffmpeg-static"),
-  { path: ffprobePath } = require("ffprobe-static"),
+  //{ path: ffprobePath } = require("ffprobe-static"),
   ffmpeg = require("fluent-ffmpeg");
 
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath);
+//ffmpeg.setFfmpegPath(ffmpegPath);
+//ffmpeg.setFfprobePath(ffprobePath);
+ffmpeg.setFfmpegPath(
+  path.join(global.appRoot, "ffmpeg-5.0.1-arm64-static", "ffmpeg")
+);
+ffmpeg.setFfprobePath(
+  path.join(global.appRoot, "ffmpeg-5.0.1-arm64-static", "ffprobe")
+);
 
 module.exports = (function () {
   return {
