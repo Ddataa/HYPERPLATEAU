@@ -221,7 +221,7 @@ PLATEAU_LOCAL=$IP
 echo "# - Installing Caddy web server"
 spinner &
 spinner_pid=$!
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo tee /etc/apt/trusted.gpg.d/caddy-stable.asc > /dev/null 2> /dev/null
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg > /dev/null 2> /dev/null
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list > /dev/null 2> /dev/null
 sudo apt-get update &>/dev/null
 sudo apt-get -qy install caddy &>/dev/null
