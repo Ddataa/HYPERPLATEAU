@@ -273,9 +273,6 @@ export default {
         this.projectdata.folder = this.new_group_name.toUpperCase();
       }
       // hyperplateau
-      console.log(this.projectdata.shareKey)
-      window.state.project_hyper_key[this.projectdata.name] = this.projectdata.shareKey
-      //this.projectdata.shareKey = window.store.projects[slugProjectName].name
 
       if (
         this.projectdata.editing_limited_to === "only_authors" &&
@@ -297,10 +294,6 @@ export default {
           data: this.projectdata,
         })
         .then((fdata) => {
-          if (typeof this.projectdata.shareKey == "undefined") {
-            console.log("pas de clef")
-            //this.$socketio.shareFolder({slugFolderName: this.projectdata.name});
-          }
           this.$emit("close", "");
           this.$root.openProject(fdata.slugFolderName);
         });

@@ -85,8 +85,8 @@
                 type="text"
                 autofocus
                 readonly
-                :value='$root.state.project_hyper_key[project.slugFolderName]'
-              />{{ project.shareKey }}
+                :value='project.shareKey'
+              />
               <button type="button" v-html="$t('copier')" class="bg-bleuvert" @click="copyToClipboard()" />
             </form>
           </div>
@@ -217,11 +217,10 @@ export default {
     },
     /* hyperplateau */
     shareProject(d) {
-      this.$socketio.shareFolder({slugFolderName: this.project.slugFolderName});
       this.showShareProjectMenu = !this.showShareProjectMenu
     },
     copyToClipboard(d) {
-      navigator.clipboard.writeText(this.$root.state.project_hyper_key[this.project.slugFolderName]);
+      navigator.clipboard.writeText(this.project.shareKey);
     },
     /* hyperplateau */
     duplicateWithNewName(event) {
